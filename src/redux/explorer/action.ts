@@ -7,7 +7,7 @@ import streamSaver from "streamsaver";
 import "../../utils/zip";
 import pathHelper from "../../utils/page";
 import { filePath, isMac } from "../../utils";
-import API, { getBaseURL } from "../../middleware/Api";
+import API from "../../middleware/Api";
 import { pathJoin, trimPrefix } from "../../component/Uploader/core/utils";
 import { getPreviewPath, walk } from "../../utils/api";
 import { askForOption } from "./async";
@@ -34,6 +34,89 @@ import {
     verifyFileSystemRWPermission,
 } from "../../utils/filesystem";
 import { sortMethodFuncs } from "../../component/FileManager/Sort";
+
+if (typeof window !== "undefined") {
+    streamSaver.mitm = `${window.location.origin}/streamsaver/mitm.html?version=2.0.0`;
+}
+
+const buildDownloadTarget = (
+    file: CloudreveFile,
+    share: any,
+    isSharePage: boolean
+): any => {
+    if (!isSharePage) {
+        return file;
+    }
+
+    return {
+        ...file,
+        key: share && share.key ? share.key : (file as any).key,
+    };
+};
+
+const getCloudreveResponseError = async (
+    response: Response
+): Promise<string | null> => {
+    const contentType = response.headers.get("content-type") || "";
+    const disposition = response.headers.get("content-disposition") || "";
+
+    if (
+        contentType.toLowerCase().indexOf("application/json") < 0 ||
+        disposition.toLowerCase().indexOf("attachment") >= 0
+    ) {
+        return null;
+    }
+
+    try {
+        const rawData = await response.clone().json();
+        if (
+            rawData &&
+            rawData.code !== undefined &&
+            rawData.code !== 0 &&
+            rawData.code !== 203
+        ) {
+            return (
+                rawData.msg ||
+                rawData.error ||
+                i18next.t("unknownError", { ns: "common" })
+            );
+        }
+    } catch (e) {
+        return null;
+    }
+
+    return null;
+};
+
+const fetchDownloadContent = async (
+    file: CloudreveFile,
+    share: any,
+    isSharePage: boolean,
+    init: RequestInit = {}
+): Promise<Response> => {
+    const downloadURL = await getDownloadURL(
+        buildDownloadTarget(file, share, isSharePage)
+    );
+    const response = await fetch(downloadURL.data, {
+        cache: "no-cache",
+        ...init,
+    });
+
+    if (!response.ok) {
+        throw new Error(`${response.status} ${response.statusText}`);
+    }
+
+    const appError = await getCloudreveResponseError(response);
+    if (appError) {
+        throw new Error(appError);
+    }
+
+    if (!response.body) {
+        throw new Error("Readable stream is not available.");
+    }
+
+    return response;
+};
 
 export interface ActionSetFileList extends AnyAction {
     type: "SET_FILE_LIST";
@@ -334,7 +417,9 @@ export const startBatchDownload = (
 
         let queue: CloudreveFile[] = [];
         try {
-            const walkSources = selected.length ? selected : [...dirList, ...fileList];
+            const walkSources = selected.length
+                ? selected
+                : [...dirList, ...fileList];
             queue = await walk(walkSources, share);
         } catch (e) {
             dispatch(
@@ -362,6 +447,7 @@ export const startBatchDownload = (
         );
         const fileStream = streamSaver.createWriteStream("archive.zip");
         let failed = 0;
+        const isSharePage = pathHelper.isSharePage(location.pathname);
         const readableZipStream = new (window as any).ZIP({
             start(ctrl: any) {
                 // ctrl.close()
@@ -370,18 +456,12 @@ export const startBatchDownload = (
                 while (queue.length > 0) {
                     const next = queue.pop();
                     if (next && next.type === "file") {
-                        const previewPath = getPreviewPath(next);
-                        const url =
-                            getBaseURL() +
-                            (pathHelper.isSharePage(location.pathname)
-                                ? "/share/preview/" +
-                                  share.key +
-                                  (previewPath !== ""
-                                      ? "?path=" + previewPath
-                                      : "")
-                                : "/file/preview/" + next.id);
                         try {
-                            const res = await fetch(url, { cache: "no-cache" });
+                            const res = await fetchDownloadContent(
+                                next,
+                                share,
+                                isSharePage
+                            );
                             const stream = () => res.body;
                             const name = trimPrefix(
                                 pathJoin([next.path, next.name]),
@@ -402,16 +482,33 @@ export const startBatchDownload = (
         if (window.WritableStream && readableZipStream.pipeTo) {
             return readableZipStream
                 .pipeTo(fileStream)
-                .then(() => dispatch(closeAllModals()))
+                .then(() => {
+                    dispatch(
+                        toggleSnackbar(
+                            "top",
+                            "center",
+                            failed === 0
+                                ? i18next.t("fileManager.batchDownloadFinished")
+                                : i18next.t(
+                                      "fileManager.batchDownloadFinishedWithError",
+                                      { failed }
+                                  ),
+                            failed === 0 ? "success" : "warning"
+                        )
+                    );
+                    dispatch(closeAllModals());
+                })
                 .catch((e) => {
                     console.log(e);
-                    toggleSnackbar(
-                        "top",
-                        "right",
-                        i18next.t("modals.batchDownloadError", {
-                            message: e && e.message,
-                        }),
-                        "warning"
+                    dispatch(
+                        toggleSnackbar(
+                            "top",
+                            "right",
+                            i18next.t("modals.batchDownloadError", {
+                                msg: e && e.message,
+                            }),
+                            "warning"
+                        )
                     );
                     dispatch(closeAllModals());
                 });
@@ -584,20 +681,11 @@ export const startDirectoryDownload = (
             dispatch(openDirectoryDownloadDialog(true, log, done));
         };
         let log = "";
+        const isSharePage = pathHelper.isSharePage(location.pathname);
 
         while (queue.length > 0) {
             const next = queue.pop();
             if (next && next.type === "file") {
-                // donload url
-                const previewPath = getPreviewPath(next);
-                const url =
-                    getBaseURL() +
-                    (pathHelper.isSharePage(location.pathname)
-                        ? "/share/preview/" +
-                          share.key +
-                          (previewPath !== "" ? "?path=" + previewPath : "")
-                        : "/file/preview/" + next.id);
-
                 // path to save this file
                 // path: / or /abc (no sep suffix)
                 // next.path: /abc/d (no sep suffix)
@@ -641,10 +729,12 @@ export const startDirectoryDownload = (
                     }
 
                     // TODO: need concurrent task queue?
-                    const res = await fetch(url, {
-                        cache: "no-cache",
-                        signal: directoryDownloadAbortController.signal,
-                    });
+                    const res = await fetchDownloadContent(
+                        next,
+                        share,
+                        isSharePage,
+                        { signal: directoryDownloadAbortController.signal }
+                    );
                     await saveFileToFileSystemDirectory(
                         handle,
                         await res.blob(),

@@ -163,6 +163,8 @@
     "serverBatchDownloadDescription": "Archive by the server and sent to the client for download on-the-fly.",
     "selectArchiveMethod": "Select archive method",
     "batchDownloadStarted": "Batch download has started, please do not close this tab",
+    "batchDownloadFinished": "Batch download finished, no failed objects.",
+    "batchDownloadFinishedWithError": "Batch download finished, {{failed}} object failed.",
     "batchDownloadError": "Failed to archive: {{msg}}",
     "userDenied": "User denied.",
     "directoryDownloadReplace": "Overwrite",

@@ -163,6 +163,8 @@
     "serverBatchDownloadDescription": "由服务端中转打包并实时发送到客户端下载。",
     "selectArchiveMethod": "选择打包下载方式",
     "batchDownloadStarted": "打包下载已开始，请不要关闭此标签页",
+    "batchDownloadFinished": "打包下载完成，无失败对象",
+    "batchDownloadFinishedWithError": "打包下载完成，失败 {{failed}} 个对象",
     "batchDownloadError": "打包遇到错误：{{msg}}",
     "userDenied": "用户拒绝",
     "directoryDownloadReplace": "替换对象",
