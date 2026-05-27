@@ -33,6 +33,7 @@ export default class OSS extends Chunk {
         this.logger.info(`Sending S3-like upload callback...`);
         return s3LikeUploadCallback(
             this.task.session!.sessionID,
+            this.task.session!.callbackSecret,
             this.cancelToken.token
         );
     }

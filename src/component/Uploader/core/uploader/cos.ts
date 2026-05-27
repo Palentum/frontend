@@ -29,6 +29,7 @@ export default class COS extends Base {
         try {
             await cosUploadCallback(
                 this.task.session!.sessionID,
+                this.task.session!.callbackSecret,
                 this.cancelToken.token
             );
         } catch (e) {

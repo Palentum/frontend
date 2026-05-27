@@ -406,12 +406,29 @@ export async function cosFormUploadChunk(
 
 export async function cosUploadCallback(
     sessionID: string,
+    callbackSecret: string,
     cancel: CancelToken
 ): Promise<any> {
+    const path = `/api/v3/callback/cos/${sessionID}`;
+    const body = "{}";
+    const expires = Math.floor(Date.now() / 1000) + 300;
+    const signContent = JSON.stringify({
+        Path: path,
+        Header: "",
+        Body: body,
+    });
+    const signature = await hmacSign(
+        callbackSecret,
+        `${signContent}:${expires}`
+    );
+
     const res = await requestAPI<any>(`callback/cos/${sessionID}`, {
-        method: "get",
-        data: "{}",
+        method: "post",
+        data: body,
         cancelToken: cancel,
+        headers: {
+            Authorization: `Bearer ${signature}:${expires}`,
+        },
     });
 
     if (res.data.code != 0) {
@@ -461,12 +478,29 @@ export async function upyunFormUploadChunk(
 
 export async function s3LikeUploadCallback(
     sessionID: string,
+    callbackSecret: string,
     cancel: CancelToken
 ): Promise<any> {
+    const path = `/api/v3/callback/s3/${sessionID}`;
+    const body = "{}";
+    const expires = Math.floor(Date.now() / 1000) + 300;
+    const signContent = JSON.stringify({
+        Path: path,
+        Header: "",
+        Body: body,
+    });
+    const signature = await hmacSign(
+        callbackSecret,
+        `${signContent}:${expires}`
+    );
+
     const res = await requestAPI<any>(`callback/s3/${sessionID}`, {
-        method: "get",
-        data: "{}",
+        method: "post",
+        data: body,
         cancelToken: cancel,
+        headers: {
+            Authorization: `Bearer ${signature}:${expires}`,
+        },
     });
 
     if (res.data.code != 0) {
