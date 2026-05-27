@@ -268,7 +268,9 @@ export default function TaskList({
                 }}
                 retryFailed={retryFailed}
                 cleanFinished={() =>
-                    setUploaders((u) => u.filter(filters["ongoing"]))
+                    setUploaders((u) =>
+                        u.filter((task) => task.status !== Status.finished)
+                    )
                 }
             />
             <Dialog

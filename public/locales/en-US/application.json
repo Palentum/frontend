@@ -296,7 +296,7 @@
     "showAvgSpeed": "Average speed",
     "cleanAllSessionTooltip": "Clear all outstanding upload sessions on the server side.",
     "cleanAllSession": "Clear all upload sessions",
-    "cleanCompletedTooltip": "Clear completed, failed, and cancelled tasks",
+    "cleanCompletedTooltip": "Clear completed tasks only",
     "cleanCompleted": "Clear completed tasks",
     "retryFailedTasks": "Retry all failed tasks",
     "retryFailedTasksTooltip": "Retry all failed tasks in current queue",
