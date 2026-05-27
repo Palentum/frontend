@@ -149,16 +149,49 @@ export async function oneDriveUploadChunk(
     return res.data;
 }
 
+async function hmacSign(secret: string, message: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+        "raw",
+        encoder.encode(secret),
+        { name: "HMAC", hash: "SHA-256" },
+        false,
+        ["sign"]
+    );
+    const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(message));
+    return btoa(String.fromCharCode(...new Uint8Array(sig)))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, "");
+}
+
 export async function finishOneDriveUpload(
     sessionID: string,
+    callbackSecret: string,
     cancel: CancelToken
 ): Promise<UploadCredential> {
+    const path = `/api/v3/callback/onedrive/finish/${sessionID}`;
+    const body = "{}";
+    const expires = Math.floor(Date.now() / 1000) + 300;
+    const signContent = JSON.stringify({
+        Path: path,
+        Header: "",
+        Body: body,
+    });
+    const signature = await hmacSign(
+        callbackSecret,
+        `${signContent}:${expires}`
+    );
+
     const res = await requestAPI<UploadCredential>(
         `callback/onedrive/finish/${sessionID}`,
         {
             method: "post",
-            data: "{}",
+            data: body,
             cancelToken: cancel,
+            headers: {
+                Authorization: `Bearer ${signature}:${expires}`,
+            },
         }
     );
 

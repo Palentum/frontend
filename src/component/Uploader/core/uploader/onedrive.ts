@@ -94,6 +94,7 @@ export default class OneDrive extends Chunk {
         this.transit(Status.finishing);
         return finishOneDriveUpload(
             this.task.session!.sessionID,
+            this.task.session!.callbackSecret,
             this.cancelToken.token
         );
     }

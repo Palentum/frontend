@@ -69,6 +69,7 @@ export interface UploadCredential {
     keyTime: string;
     path: string;
     completeURL: string;
+    callbackSecret: string;
 }
 
 export interface OneDriveError {
