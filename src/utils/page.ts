@@ -3,13 +3,13 @@ const statusHelper = {
         return path === "/home";
     },
     isSharePage(path: string) {
-        return path && path.startsWith("/s/");
+        return !!path && path.startsWith("/s/");
     },
     isAdminPage(path: string) {
-        return path && path.startsWith("/admin");
+        return !!path && path.startsWith("/admin");
     },
     isLoginPage(path: string) {
-        return path && path.startsWith("/login");
+        return !!path && path.startsWith("/login");
     },
     isMobile() {
         return window.innerWidth < 600;
