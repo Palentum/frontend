@@ -28,6 +28,7 @@ import {
 import { ChunkInfo, ChunkProgress } from "../uploader/chunk";
 import { Progress } from "../uploader/base";
 import { CancelToken } from "axios";
+import { hmacSign } from "./hmac";
 
 export async function createUploadSession(
     req: UploadSessionRequest,
@@ -147,22 +148,6 @@ export async function oneDriveUploadChunk(
     });
 
     return res.data;
-}
-
-async function hmacSign(secret: string, message: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const key = await crypto.subtle.importKey(
-        "raw",
-        encoder.encode(secret),
-        { name: "HMAC", hash: "SHA-256" },
-        false,
-        ["sign"]
-    );
-    const sig = await crypto.subtle.sign("HMAC", key, encoder.encode(message));
-    return btoa(String.fromCharCode(...new Uint8Array(sig)))
-        .replace(/\+/g, "-")
-        .replace(/\//g, "_")
-        .replace(/=+$/, "");
 }
 
 export async function finishOneDriveUpload(
