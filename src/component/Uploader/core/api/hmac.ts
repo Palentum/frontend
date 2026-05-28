@@ -24,63 +24,51 @@ const SHA256_H = [
     0x9b05688c, 0x1f83d9ab, 0x5be0cd19,
 ];
 
-export async function hmacSign(
-    secret: string,
-    message: string
-): Promise<string> {
-    const cryptoAPI = typeof crypto === "undefined" ? undefined : crypto;
-    if (cryptoAPI && cryptoAPI.subtle) {
-        const encoder = new TextEncoder();
-        const key = await cryptoAPI.subtle.importKey(
-            "raw",
-            encoder.encode(secret),
-            { name: "HMAC", hash: "SHA-256" },
-            false,
-            ["sign"]
+function rotr(value: number, shift: number): number {
+    return (value >>> shift) | (value << (32 - shift));
+}
+
+function concatBytes(left: Uint8Array, right: Uint8Array): Uint8Array {
+    const result = new Uint8Array(left.length + right.length);
+    result.set(left);
+    result.set(right, left.length);
+    return result;
+}
+
+function isHighSurrogate(codePoint: number): boolean {
+    return codePoint >= 0xd800 && codePoint <= 0xdbff;
+}
+
+function isLowSurrogate(codePoint: number): boolean {
+    return codePoint >= 0xdc00 && codePoint <= 0xdfff;
+}
+
+function appendUtf8CodePoint(bytes: number[], codePoint: number) {
+    if (codePoint < 0x80) {
+        bytes.push(codePoint);
+        return;
+    }
+
+    if (codePoint < 0x800) {
+        bytes.push(0xc0 | (codePoint >> 6), 0x80 | (codePoint & 0x3f));
+        return;
+    }
+
+    if (codePoint < 0x10000) {
+        bytes.push(
+            0xe0 | (codePoint >> 12),
+            0x80 | ((codePoint >> 6) & 0x3f),
+            0x80 | (codePoint & 0x3f)
         );
-        const sig = await cryptoAPI.subtle.sign(
-            "HMAC",
-            key,
-            encoder.encode(message)
-        );
-        return base64UrlEncode(new Uint8Array(sig));
+        return;
     }
 
-    return hmacSha256Base64Url(secret, message);
-}
-
-export function hmacSha256Base64Url(secret: string, message: string): string {
-    return base64UrlEncode(hmacSha256(utf8Bytes(secret), utf8Bytes(message)));
-}
-
-function hmacSha256(key: Uint8Array, message: Uint8Array): Uint8Array {
-    const normalizedKey = key.length > SHA256_BLOCK_SIZE ? sha256(key) : key;
-    const keyBlock = new Uint8Array(SHA256_BLOCK_SIZE);
-    keyBlock.set(normalizedKey);
-
-    const innerPad = new Uint8Array(SHA256_BLOCK_SIZE);
-    const outerPad = new Uint8Array(SHA256_BLOCK_SIZE);
-    for (let i = 0; i < SHA256_BLOCK_SIZE; i++) {
-        innerPad[i] = keyBlock[i] ^ 0x36;
-        outerPad[i] = keyBlock[i] ^ 0x5c;
-    }
-
-    const innerHash = sha256(concatBytes(innerPad, message));
-    return sha256(concatBytes(outerPad, innerHash));
-}
-
-function sha256(message: Uint8Array): Uint8Array {
-    const blocks = paddedBlocks(message);
-    const words = new Uint32Array(64);
-    const hash = SHA256_H.slice();
-    const view = new DataView(blocks.buffer);
-
-    for (let offset = 0; offset < blocks.length; offset += SHA256_BLOCK_SIZE) {
-        fillMessageSchedule(words, view, offset);
-        compressBlock(hash, words);
-    }
-
-    return hashToBytes(hash);
+    bytes.push(
+        0xf0 | (codePoint >> 18),
+        0x80 | ((codePoint >> 12) & 0x3f),
+        0x80 | ((codePoint >> 6) & 0x3f),
+        0x80 | (codePoint & 0x3f)
+    );
 }
 
 function paddedBlocks(message: Uint8Array): Uint8Array {
@@ -150,6 +138,20 @@ function hashToBytes(hash: number[]): Uint8Array {
     return bytes;
 }
 
+function sha256(message: Uint8Array): Uint8Array {
+    const blocks = paddedBlocks(message);
+    const words = new Uint32Array(64);
+    const hash = SHA256_H.slice();
+    const view = new DataView(blocks.buffer);
+
+    for (let offset = 0; offset < blocks.length; offset += SHA256_BLOCK_SIZE) {
+        fillMessageSchedule(words, view, offset);
+        compressBlock(hash, words);
+    }
+
+    return hashToBytes(hash);
+}
+
 function base64UrlEncode(bytes: Uint8Array): string {
     let encoded = "";
     for (let i = 0; i < bytes.length; i += 3) {
@@ -165,13 +167,6 @@ function base64UrlEncode(bytes: Uint8Array): string {
         encoded += i + 2 < bytes.length ? BASE64_URL_TABLE[b3 & 63] : "=";
     }
     return encoded;
-}
-
-function concatBytes(left: Uint8Array, right: Uint8Array): Uint8Array {
-    const result = new Uint8Array(left.length + right.length);
-    result.set(left);
-    result.set(right, left.length);
-    return result;
 }
 
 function utf8Bytes(value: string): Uint8Array {
@@ -197,42 +192,47 @@ function utf8Bytes(value: string): Uint8Array {
     return new Uint8Array(bytes);
 }
 
-function rotr(value: number, shift: number): number {
-    return (value >>> shift) | (value << (32 - shift));
+function hmacSha256(key: Uint8Array, message: Uint8Array): Uint8Array {
+    const normalizedKey = key.length > SHA256_BLOCK_SIZE ? sha256(key) : key;
+    const keyBlock = new Uint8Array(SHA256_BLOCK_SIZE);
+    keyBlock.set(normalizedKey);
+
+    const innerPad = new Uint8Array(SHA256_BLOCK_SIZE);
+    const outerPad = new Uint8Array(SHA256_BLOCK_SIZE);
+    for (let i = 0; i < SHA256_BLOCK_SIZE; i++) {
+        innerPad[i] = keyBlock[i] ^ 0x36;
+        outerPad[i] = keyBlock[i] ^ 0x5c;
+    }
+
+    const innerHash = sha256(concatBytes(innerPad, message));
+    return sha256(concatBytes(outerPad, innerHash));
 }
 
-function appendUtf8CodePoint(bytes: number[], codePoint: number) {
-    if (codePoint < 0x80) {
-        bytes.push(codePoint);
-        return;
-    }
+export function hmacSha256Base64Url(secret: string, message: string): string {
+    return base64UrlEncode(hmacSha256(utf8Bytes(secret), utf8Bytes(message)));
+}
 
-    if (codePoint < 0x800) {
-        bytes.push(0xc0 | (codePoint >> 6), 0x80 | (codePoint & 0x3f));
-        return;
-    }
-
-    if (codePoint < 0x10000) {
-        bytes.push(
-            0xe0 | (codePoint >> 12),
-            0x80 | ((codePoint >> 6) & 0x3f),
-            0x80 | (codePoint & 0x3f)
+export async function hmacSign(
+    secret: string,
+    message: string
+): Promise<string> {
+    const cryptoAPI = typeof crypto === "undefined" ? undefined : crypto;
+    if (cryptoAPI && cryptoAPI.subtle) {
+        const encoder = new TextEncoder();
+        const key = await cryptoAPI.subtle.importKey(
+            "raw",
+            encoder.encode(secret),
+            { name: "HMAC", hash: "SHA-256" },
+            false,
+            ["sign"]
         );
-        return;
+        const sig = await cryptoAPI.subtle.sign(
+            "HMAC",
+            key,
+            encoder.encode(message)
+        );
+        return base64UrlEncode(new Uint8Array(sig));
     }
 
-    bytes.push(
-        0xf0 | (codePoint >> 18),
-        0x80 | ((codePoint >> 12) & 0x3f),
-        0x80 | ((codePoint >> 6) & 0x3f),
-        0x80 | (codePoint & 0x3f)
-    );
-}
-
-function isHighSurrogate(codePoint: number): boolean {
-    return codePoint >= 0xd800 && codePoint <= 0xdbff;
-}
-
-function isLowSurrogate(codePoint: number): boolean {
-    return codePoint >= 0xdc00 && codePoint <= 0xdfff;
+    return hmacSha256Base64Url(secret, message);
 }
