@@ -1,5 +1,5 @@
 import { ThunkAction } from "redux-thunk";
-import { setOptionModal, setShareCaptchaModal } from "../viewUpdate/action";
+import { setOptionModal } from "../viewUpdate/action";
 import i18next from "../../i18n";
 
 export const askForOption = (
@@ -30,29 +30,3 @@ export const askForOption = (
     };
 };
 
-export const askForShareCaptcha = (): ThunkAction<any, any, any, any> => {
-    return async (dispatch): Promise<string> => {
-        return new Promise<string>((resolve, reject) => {
-            const dialog = {
-                open: true,
-            };
-            dispatch(
-                setShareCaptchaModal({
-                    ...dialog,
-                    onClose: () => {
-                        dispatch(
-                            setShareCaptchaModal({ ...dialog, open: false })
-                        );
-                        reject(i18next.t("fileManager.userDenied"));
-                    },
-                    callback: (token: string) => {
-                        resolve(token);
-                        dispatch(
-                            setShareCaptchaModal({ ...dialog, open: false })
-                        );
-                    },
-                })
-            );
-        });
-    };
-};

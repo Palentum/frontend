@@ -13,48 +13,28 @@ describe("getDownloadURL", () => {
         jest.clearAllMocks();
     });
 
-    it("adds the Cap token header for shared downloads", async () => {
-        await getDownloadURL(
-            {
-                key: "shareKey",
-                path: "/folder",
-                name: "file name.txt",
-            },
-            "cap-token"
-        );
+    it("constructs correct URL for shared downloads", async () => {
+        await getDownloadURL({
+            key: "shareKey",
+            path: "/folder",
+            name: "file name.txt",
+        });
 
         expect(API.put).toHaveBeenCalledWith(
-            "/share/download/shareKey?path=%2Ffolder%2Ffile%20name.txt",
-            undefined,
-            {
-                headers: {
-                    "X-Cap-Token": "cap-token",
-                },
-            }
+            "/share/download/shareKey?path=%2Ffolder%2Ffile%20name.txt"
         );
     });
 
     it("omits path parameter for single-file shares", async () => {
-        await getDownloadURL(
-            {
-                key: "shareKey",
-                source: { name: "report.pdf" },
-            },
-            "cap-token"
-        );
+        await getDownloadURL({
+            key: "shareKey",
+            source: { name: "report.pdf" },
+        });
 
-        expect(API.put).toHaveBeenCalledWith(
-            "/share/download/shareKey",
-            undefined,
-            {
-                headers: {
-                    "X-Cap-Token": "cap-token",
-                },
-            }
-        );
+        expect(API.put).toHaveBeenCalledWith("/share/download/shareKey");
     });
 
-    it("keeps existing requests unchanged when no Cap token is provided", async () => {
+    it("constructs correct URL for non-shared files", async () => {
         await getDownloadURL({ id: "fileID" });
 
         expect(API.put).toHaveBeenCalledWith("/file/download/fileID");

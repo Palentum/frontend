@@ -58,7 +58,6 @@ export default function Captcha() {
         captcha_TCaptcha_AppSecretKey: "",
         captcha_TCaptcha_SecretId: "",
         captcha_TCaptcha_SecretKey: "",
-        share_captcha_enabled: "0",
     });
 
     const handleChange = (name) => (event) => {
@@ -521,34 +520,6 @@ export default function Captcha() {
                         </div>
                     </div>
                 )}
-
-                <div className={classes.root}>
-                    <Typography variant="h6" gutterBottom>
-                        {t("shareCaptcha")}
-                    </Typography>
-                    <div className={classes.formContainer}>
-                        <div className={classes.form}>
-                            <FormControl fullWidth>
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            checked={
-                                                options.share_captcha_enabled === "1"
-                                            }
-                                            onChange={handleCheckChange(
-                                                "share_captcha_enabled"
-                                            )}
-                                        />
-                                    }
-                                    label={t("shareCaptchaEnabled")}
-                                />
-                                <FormHelperText id="component-helper-text">
-                                    {t("shareCaptchaEnabledDes")}
-                                </FormHelperText>
-                            </FormControl>
-                        </div>
-                    </div>
-                </div>
 
                 <div className={classes.root}>
                     <Button

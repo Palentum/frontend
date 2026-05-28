@@ -1,6 +1,6 @@
 import API from "../middleware/Api";
 
-export async function getDownloadURL(file: any, capToken?: string): Promise<any> {
+export async function getDownloadURL(file: any): Promise<any> {
     let reqURL = "";
     if (file.key) {
         reqURL = "/share/download/" + file.key;
@@ -13,14 +13,6 @@ export async function getDownloadURL(file: any, capToken?: string): Promise<any>
         }
     } else {
         reqURL = "/file/download/" + file.id;
-    }
-
-    if (capToken) {
-        return API.put(reqURL, undefined, {
-            headers: {
-                "X-Cap-Token": capToken,
-            },
-        });
     }
 
     return API.put(reqURL);

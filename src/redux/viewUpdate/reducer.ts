@@ -49,11 +49,6 @@ export interface ViewUpdateState {
             callback: any;
             onClose: any;
         };
-        shareCaptcha?: {
-            open: boolean;
-            callback: any;
-            onClose: any;
-        };
     };
     snackbar: {
         toggle: boolean;
@@ -107,7 +102,6 @@ export const initState: ViewUpdateState = {
         directoryDownloading: false,
         directoryDownloadLog: "",
         directoryDownloadDone: false,
-        shareCaptcha: undefined,
     },
     snackbar: {
         toggle: false,
@@ -294,7 +288,6 @@ const viewUpdate = (state: ViewUpdateState = initState, action: AnyAction) => {
                     directoryDownloading: false,
                     directoryDownloadLog: "",
                     directoryDownloadDone: false,
-                    shareCaptcha: undefined,
                 }),
             });
         case "TOGGLE_SNACKBAR":
@@ -354,13 +347,6 @@ const viewUpdate = (state: ViewUpdateState = initState, action: AnyAction) => {
             return Object.assign({}, state, {
                 modals: Object.assign({}, state.modals, {
                     option: action.option,
-                }),
-                contextOpen: false,
-            });
-        case "SET_SHARE_CAPTCHA_MODAL":
-            return Object.assign({}, state, {
-                modals: Object.assign({}, state.modals, {
-                    shareCaptcha: action.captcha,
                 }),
                 contextOpen: false,
             });

@@ -10,7 +10,7 @@ import { filePath, isMac } from "../../utils";
 import API from "../../middleware/Api";
 import { pathJoin, trimPrefix } from "../../component/Uploader/core/utils";
 import { getPreviewPath, walk } from "../../utils/api";
-import { askForOption, askForShareCaptcha } from "./async";
+import { askForOption } from "./async";
 import Auth from "../../middleware/Auth";
 import { encodingRequired, isPreviewable } from "../../config";
 import { push } from "connected-react-router";
@@ -92,12 +92,10 @@ const fetchDownloadContent = async (
     file: CloudreveFile,
     share: any,
     isSharePage: boolean,
-    init: RequestInit = {},
-    capToken = ""
+    init: RequestInit = {}
 ): Promise<Response> => {
     const downloadURL = await getDownloadURL(
-        buildDownloadTarget(file, share, isSharePage),
-        capToken
+        buildDownloadTarget(file, share, isSharePage)
     );
     const response = await fetch(downloadURL.data, {
         cache: "no-cache",
@@ -120,25 +118,6 @@ const fetchDownloadContent = async (
     return response;
 };
 
-const requestShareCaptchaToken = async (
-    dispatch: any,
-    isSharePage: boolean,
-    getState?: () => any
-): Promise<string | null> => {
-    if (!isSharePage) {
-        return "";
-    }
-
-    if (getState && !getState().siteConfig.shareCaptchaEnabled) {
-        return "";
-    }
-
-    try {
-        return await dispatch(askForShareCaptcha());
-    } catch (e) {
-        return null;
-    }
-};
 export interface ActionSetFileList extends AnyAction {
     type: "SET_FILE_LIST";
     list: CloudreveFile[];
@@ -285,8 +264,7 @@ export const toggleObjectInfoSidebar = (
 };
 
 export const serverSideBatchDownload = (
-    share: any,
-    capToken = ""
+    share: any
 ): ThunkAction<any, any, any, any> => {
     return (dispatch, getState): void => {
         dispatch(
@@ -322,14 +300,7 @@ export const serverSideBatchDownload = (
 
         API.post(
             reqURL,
-            postBody,
-            capToken
-                ? {
-                      headers: {
-                          "X-Cap-Token": capToken,
-                      },
-                  }
-                : undefined
+            postBody
         )
             .then((response: any) => {
                 if (response.rawData.code === 0) {
@@ -386,13 +357,9 @@ export const startDownload = (
         }
 
         dispatch(changeContextMenu("file", false));
-        const capToken = await requestShareCaptchaToken(dispatch, isSharePage, getState);
-        if (capToken === null) {
-            return;
-        }
         dispatch(openLoadingDialog(i18next.t("fileManager.preparingDownload")));
         try {
-            const res = await getDownloadURL(file ? file : share, capToken);
+            const res = await getDownloadURL(file ? file : share);
             window.location.assign(res.data);
             dispatch(closeAllModals());
         } catch (e) {
@@ -415,10 +382,6 @@ export const startBatchDownload = (
         } = getState();
         const user = Auth.GetUser();
         const isSharePage = pathHelper.isSharePage(pathname);
-        const capToken = await requestShareCaptchaToken(dispatch, isSharePage, getState);
-        if (capToken === null) {
-            return;
-        }
 
         if (user.group.allowArchiveDownload) {
             let option: any;
@@ -453,7 +416,7 @@ export const startBatchDownload = (
             }
 
             if (option.key === "server") {
-                dispatch(serverSideBatchDownload(share, capToken));
+                dispatch(serverSideBatchDownload(share));
                 return;
             }
         }
@@ -505,8 +468,7 @@ export const startBatchDownload = (
                                 next,
                                 share,
                                 isSharePage,
-                                {},
-                                capToken
+                                {}
                             );
                             const stream = () => res.body;
                             const name = trimPrefix(
@@ -572,7 +534,6 @@ export const startDirectoryDownload = (
     return async (dispatch, getState): Promise<void> => {
         dispatch(changeContextMenu("file", false));
 
-        // 先检查浏览器是否支持目录下载，避免浪费验证码
         if (!window.showDirectoryPicker || !window.isSecureContext) {
             directoryDownloadAbortController = new AbortController();
             return;
@@ -584,10 +545,6 @@ export const startDirectoryDownload = (
             },
         } = getState();
         const isSharePage = pathHelper.isSharePage(pathname);
-        const capToken = await requestShareCaptchaToken(dispatch, isSharePage, getState);
-        if (capToken === null) {
-            return;
-        }
 
         directoryDownloadAbortController = new AbortController();
         let handle: FileSystemDirectoryHandle;
@@ -792,8 +749,7 @@ export const startDirectoryDownload = (
                         next,
                         share,
                         isSharePage,
-                        { signal: directoryDownloadAbortController.signal },
-                        capToken
+                        { signal: directoryDownloadAbortController.signal }
                     );
                     await saveFileToFileSystemDirectory(
                         handle,

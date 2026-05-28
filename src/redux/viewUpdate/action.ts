@@ -50,13 +50,6 @@ export const setOptionModal = (option: any) => {
     };
 };
 
-export const setShareCaptchaModal = (captcha: any) => {
-    return {
-        type: "SET_SHARE_CAPTCHA_MODAL",
-        captcha: captcha,
-    };
-};
-
 export const openFileSelector = () => {
     return {
         type: "OPEN_FILE_SELECTOR",

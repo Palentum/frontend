@@ -30,7 +30,6 @@ import {
     toggleSnackbar,
 } from "../../redux/explorer";
 import OptionSelector from "../Modals/OptionSelector";
-import ShareCaptcha from "../Modals/ShareCaptcha";
 import { getDownloadURL } from "../../services/file";
 import { Trans, withTranslation } from "react-i18next";
 import RemoteDownload from "../Modals/RemoteDownload";
@@ -420,7 +419,6 @@ class ModalsCompoment extends Component {
             <div>
                 <Loading />
                 <OptionSelector />
-                <ShareCaptcha />
                 <Dialog
                     open={this.props.modalsStatus.getSource}
                     onClose={this.onClose}
