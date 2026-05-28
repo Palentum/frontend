@@ -122,9 +122,14 @@ const fetchDownloadContent = async (
 
 const requestShareCaptchaToken = async (
     dispatch: any,
-    isSharePage: boolean
+    isSharePage: boolean,
+    getState?: () => any
 ): Promise<string | null> => {
     if (!isSharePage) {
+        return "";
+    }
+
+    if (getState && !getState().siteConfig.shareCaptchaEnabled) {
         return "";
     }
 
@@ -381,7 +386,7 @@ export const startDownload = (
         }
 
         dispatch(changeContextMenu("file", false));
-        const capToken = await requestShareCaptchaToken(dispatch, isSharePage);
+        const capToken = await requestShareCaptchaToken(dispatch, isSharePage, getState);
         if (capToken === null) {
             return;
         }
@@ -410,7 +415,7 @@ export const startBatchDownload = (
         } = getState();
         const user = Auth.GetUser();
         const isSharePage = pathHelper.isSharePage(pathname);
-        const capToken = await requestShareCaptchaToken(dispatch, isSharePage);
+        const capToken = await requestShareCaptchaToken(dispatch, isSharePage, getState);
         if (capToken === null) {
             return;
         }
@@ -579,7 +584,7 @@ export const startDirectoryDownload = (
             },
         } = getState();
         const isSharePage = pathHelper.isSharePage(pathname);
-        const capToken = await requestShareCaptchaToken(dispatch, isSharePage);
+        const capToken = await requestShareCaptchaToken(dispatch, isSharePage, getState);
         if (capToken === null) {
             return;
         }

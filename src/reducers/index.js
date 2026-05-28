@@ -65,6 +65,7 @@ export const initState = {
         captcha_ReCaptchaKey: "defaultKey",
         captcha_type: "normal",
         tcaptcha_captcha_app_id: "",
+        shareCaptchaEnabled: false,
         wopi_exts: [],
     },
     navigator: {
