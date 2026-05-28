@@ -133,11 +133,7 @@ class SharedFolderComponent extends Component {
                     }}
                 >
                     <Typography>
-                        <Creator
-                            isFolder
-                            onClose={() => this.props.setShareUserPopover(null)}
-                            share={this.props.share}
-                        />
+                        <Creator isFolder share={this.props.share} />
                     </Typography>
                 </Popover>
             </div>
