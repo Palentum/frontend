@@ -36,7 +36,6 @@
     "dashboard": "Cloudreve 控制台"
   },
   "summary": {
-    "newsletterError": "Cloudreve 公告載入失敗",
     "confirmSiteURLTitle": "確定站點URL設定",
     "siteURLNotSet": "您尚未設定站點URL，是否要將其設定為當前的 {{current}} ?",
     "siteURLNotMatch": "您設定的站點URL與當前實際不一致，是否要將其設定為當前的 {{current}} ?",
@@ -48,16 +47,7 @@
     "totalUsers": "註冊用戶",
     "totalFiles": "文件總數",
     "publicShares": "公開分享總數",
-    "privateShares": "私密分享總數",
-    "homepage": "首頁",
-    "documents": "文件",
-    "forum": "討論社群",
-    "forumLink": "https://forum.cloudreve.org",
-    "telegramGroup": "Telegram 群組",
-    "telegramGroupLink": "https://t.me/cloudreve_official",
-    "buyPro": "購買捐助版",
-    "publishedAt": "發表於 <0></0>",
-    "newsTag": "notice"
+    "privateShares": "私密分享總數"
   },
   "settings": {
     "saved": "設定已更改",
