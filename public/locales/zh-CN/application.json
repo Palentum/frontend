@@ -251,7 +251,16 @@
     "forceDelete": "强制删除文件",
     "forceDeleteDes": "强制删除文件记录，无论物理文件是否被成功删除",
     "unlinkOnly": "仅解除链接",
-    "unlinkOnlyDes": "仅删除文件记录，物理文件不会被删除"
+    "unlinkOnlyDes": "仅删除文件记录，物理文件不会被删除",
+    "shareCaptchaTitle": "下载验证",
+    "shareCaptchaDescription": "请先完成验证，验证成功后将继续下载。",
+    "shareCaptchaLoading": "正在加载验证码...",
+    "shareCaptchaInitial": "验证您是真人",
+    "shareCaptchaVerifying": "验证中...",
+    "shareCaptchaSolved": "验证通过",
+    "shareCaptchaWidgetError": "验证失败，请重试",
+    "shareCaptchaError": "验证码加载失败",
+    "shareCaptchaErrorWithMessage": "验证码加载失败：{{message}}"
   },
   "uploader": {
     "fileNotMatchError": "所选择文件与原始文件不符",

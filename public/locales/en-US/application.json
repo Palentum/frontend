@@ -251,7 +251,16 @@
     "forceDelete": "Force delete ",
     "forceDeleteDes": "Force delete file records, regardless of whether the physical file was successfully deleted.",
     "unlinkOnly": "Unlink only",
-    "unlinkOnlyDes": "Delete file records only, physical files will not be deleted."
+    "unlinkOnlyDes": "Delete file records only, physical files will not be deleted.",
+    "shareCaptchaTitle": "Download verification",
+    "shareCaptchaDescription": "Complete the verification before the download continues.",
+    "shareCaptchaLoading": "Loading CAPTCHA...",
+    "shareCaptchaInitial": "Verify you're human",
+    "shareCaptchaVerifying": "Verifying...",
+    "shareCaptchaSolved": "Verified",
+    "shareCaptchaWidgetError": "Verification failed. Try again.",
+    "shareCaptchaError": "CAPTCHA failed to load",
+    "shareCaptchaErrorWithMessage": "CAPTCHA failed to load: {{message}}"
   },
   "uploader": {
     "fileNotMatchError": "The selected file does not match the original file.",

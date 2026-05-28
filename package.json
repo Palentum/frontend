@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@babel/core": "7.6.0",
+    "@cap.js/wasm": "0.0.7",
     "@material-ui/core": "~4.11.0",
     "@material-ui/icons": "^4.5.1",
     "@material-ui/lab": "4.0.0-alpha.57",
@@ -26,6 +27,7 @@
     "babel-plugin-named-asset-import": "^0.3.4",
     "babel-preset-react-app": "^9.0.2",
     "camelcase": "^5.2.0",
+    "cap-widget": "0.1.53",
     "case-sensitive-paths-webpack-plugin": "2.2.0",
     "classnames": "^2.2.6",
     "clsx": "latest",

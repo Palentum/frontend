@@ -1335,6 +1335,11 @@
     "@babel/helper-validator-identifier" "^7.19.1"
     to-fast-properties "^2.0.0"
 
+"@cap.js/wasm@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@cap.js/wasm/-/wasm-0.0.7.tgz#31f2e673d37dea381d11534258cebfa7b08a3b92"
+  integrity sha512-IgUjrPOUBaOjTp+BkrhfEBBeQ4An7fQiSWWezDy9Uvd+OdTYm4+h3AJU0j/CpHYayp7FltZU+UePC6p28oGQaw==
+
 "@cnakazawa/watch@^1.0.3":
   version "1.0.4"
   resolved "https://registry.yarnpkg.com/@cnakazawa/watch/-/watch-1.0.4.tgz#f864ae85004d0fcab6f50be9141c4da368d1656a"
@@ -3282,6 +3287,11 @@ caniuse-lite@^1.0.0, caniuse-lite@^1.0.30000981, caniuse-lite@^1.0.30000989, can
   version "1.0.30001312"
   resolved "https://registry.yarnpkg.com/caniuse-lite/-/caniuse-lite-1.0.30001312.tgz#e11eba4b87e24d22697dae05455d5aea28550d5f"
   integrity sha512-Wiz1Psk2MEK0pX3rUzWaunLTZzqS2JYZFzNKqAiJGiuxIjRPLgV6+VDPOg6lQOUxmDwhTlh198JsTTi8Hzw6aQ==
+
+cap-widget@0.1.53:
+  version "0.1.53"
+  resolved "https://registry.yarnpkg.com/cap-widget/-/cap-widget-0.1.53.tgz#91055a0ba3e2cfeacaabe41f86d3b067388894e5"
+  integrity sha512-sF8exFiaOwQOuTkxAh8mDtA6VU/x3O9L5ZXNRmmAlEjPtOzbczcO0mleLnPq9R/7qM0KcenYl9roqBNUfdTcXw==
 
 capture-exit@^2.0.0:
   version "2.0.0"

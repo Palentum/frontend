@@ -10,7 +10,7 @@ import { filePath, isMac } from "../../utils";
 import API from "../../middleware/Api";
 import { pathJoin, trimPrefix } from "../../component/Uploader/core/utils";
 import { getPreviewPath, walk } from "../../utils/api";
-import { askForOption } from "./async";
+import { askForOption, askForShareCaptcha } from "./async";
 import Auth from "../../middleware/Auth";
 import { encodingRequired, isPreviewable } from "../../config";
 import { push } from "connected-react-router";
@@ -92,10 +92,12 @@ const fetchDownloadContent = async (
     file: CloudreveFile,
     share: any,
     isSharePage: boolean,
-    init: RequestInit = {}
+    init: RequestInit = {},
+    capToken = ""
 ): Promise<Response> => {
     const downloadURL = await getDownloadURL(
-        buildDownloadTarget(file, share, isSharePage)
+        buildDownloadTarget(file, share, isSharePage),
+        capToken
     );
     const response = await fetch(downloadURL.data, {
         cache: "no-cache",
@@ -118,6 +120,20 @@ const fetchDownloadContent = async (
     return response;
 };
 
+const requestShareCaptchaToken = async (
+    dispatch: any,
+    isSharePage: boolean
+): Promise<string | null> => {
+    if (!isSharePage) {
+        return "";
+    }
+
+    try {
+        return await dispatch(askForShareCaptcha());
+    } catch (e) {
+        return null;
+    }
+};
 export interface ActionSetFileList extends AnyAction {
     type: "SET_FILE_LIST";
     list: CloudreveFile[];
@@ -264,7 +280,8 @@ export const toggleObjectInfoSidebar = (
 };
 
 export const serverSideBatchDownload = (
-    share: any
+    share: any,
+    capToken = ""
 ): ThunkAction<any, any, any, any> => {
     return (dispatch, getState): void => {
         dispatch(
@@ -298,7 +315,17 @@ export const serverSideBatchDownload = (
             postBody["path"] = fileSources[0].path;
         }
 
-        API.post(reqURL, postBody)
+        API.post(
+            reqURL,
+            postBody,
+            capToken
+                ? {
+                      headers: {
+                          "X-Cap-Token": capToken,
+                      },
+                  }
+                : undefined
+        )
             .then((response: any) => {
                 if (response.rawData.code === 0) {
                     dispatch(closeAllModals());
@@ -335,8 +362,9 @@ export const startDownload = (
             },
         } = getState();
         const user = Auth.GetUser();
+        const isSharePage = pathHelper.isSharePage(pathname);
         if (
-            pathHelper.isSharePage(pathname) &&
+            isSharePage &&
             !Auth.Check() &&
             user &&
             !user.group.shareDownload
@@ -353,9 +381,13 @@ export const startDownload = (
         }
 
         dispatch(changeContextMenu("file", false));
+        const capToken = await requestShareCaptchaToken(dispatch, isSharePage);
+        if (capToken === null) {
+            return;
+        }
         dispatch(openLoadingDialog(i18next.t("fileManager.preparingDownload")));
         try {
-            const res = await getDownloadURL(file ? file : share);
+            const res = await getDownloadURL(file ? file : share, capToken);
             window.location.assign(res.data);
             dispatch(closeAllModals());
         } catch (e) {
@@ -372,9 +404,17 @@ export const startBatchDownload = (
         dispatch(changeContextMenu("file", false));
         const {
             explorer: { selected, fileList, dirList },
+            router: {
+                location: { pathname },
+            },
         } = getState();
-
         const user = Auth.GetUser();
+        const isSharePage = pathHelper.isSharePage(pathname);
+        const capToken = await requestShareCaptchaToken(dispatch, isSharePage);
+        if (capToken === null) {
+            return;
+        }
+
         if (user.group.allowArchiveDownload) {
             let option: any;
             try {
@@ -408,7 +448,7 @@ export const startBatchDownload = (
             }
 
             if (option.key === "server") {
-                dispatch(serverSideBatchDownload(share));
+                dispatch(serverSideBatchDownload(share, capToken));
                 return;
             }
         }
@@ -447,7 +487,6 @@ export const startBatchDownload = (
         );
         const fileStream = streamSaver.createWriteStream("archive.zip");
         let failed = 0;
-        const isSharePage = pathHelper.isSharePage(location.pathname);
         const readableZipStream = new (window as any).ZIP({
             start(ctrl: any) {
                 // ctrl.close()
@@ -460,7 +499,9 @@ export const startBatchDownload = (
                             const res = await fetchDownloadContent(
                                 next,
                                 share,
-                                isSharePage
+                                isSharePage,
+                                {},
+                                capToken
                             );
                             const stream = () => res.body;
                             const name = trimPrefix(
@@ -526,10 +567,24 @@ export const startDirectoryDownload = (
     return async (dispatch, getState): Promise<void> => {
         dispatch(changeContextMenu("file", false));
 
-        directoryDownloadAbortController = new AbortController();
+        // 先检查浏览器是否支持目录下载，避免浪费验证码
         if (!window.showDirectoryPicker || !window.isSecureContext) {
+            directoryDownloadAbortController = new AbortController();
             return;
         }
+
+        const {
+            router: {
+                location: { pathname },
+            },
+        } = getState();
+        const isSharePage = pathHelper.isSharePage(pathname);
+        const capToken = await requestShareCaptchaToken(dispatch, isSharePage);
+        if (capToken === null) {
+            return;
+        }
+
+        directoryDownloadAbortController = new AbortController();
         let handle: FileSystemDirectoryHandle;
         // we should show directory picker at first
         // https://web.dev/file-system-access/#:~:text=handle%3B%0A%7D-,Gotchas,-Sometimes%20processing%20the
@@ -681,7 +736,6 @@ export const startDirectoryDownload = (
             dispatch(openDirectoryDownloadDialog(true, log, done));
         };
         let log = "";
-        const isSharePage = pathHelper.isSharePage(location.pathname);
 
         while (queue.length > 0) {
             const next = queue.pop();
@@ -733,7 +787,8 @@ export const startDirectoryDownload = (
                         next,
                         share,
                         isSharePage,
-                        { signal: directoryDownloadAbortController.signal }
+                        { signal: directoryDownloadAbortController.signal },
+                        capToken
                     );
                     await saveFileToFileSystemDirectory(
                         handle,
