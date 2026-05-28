@@ -52,6 +52,18 @@ export default function ShareCaptcha() {
     const [error, setError] = useState("");
     const captcha = useSelector((state) => state.viewUpdate.modals.shareCaptcha);
 
+    // 将 callback 存入 ref，避免 useEffect 闭包捕获陈旧引用导致 Promise 无法 resolve
+    const onSolveRef = useRef(null);
+    const onCloseRef = useRef(null);
+    useEffect(() => {
+        if (captcha && captcha.callback) {
+            onSolveRef.current = captcha.callback;
+        }
+        if (captcha && captcha.onClose) {
+            onCloseRef.current = captcha.onClose;
+        }
+    }, [captcha]);
+
     useEffect(() => {
         if (typeof window === "undefined" || getCapWidgetReady()) {
             setReady(getCapWidgetReady());
@@ -91,7 +103,10 @@ export default function ShareCaptcha() {
         setError("");
         const widget = widgetRef.current;
         const handleSolve = (event) => {
-            captcha.callback(event.detail.token);
+            const cb = onSolveRef.current;
+            if (cb) {
+                cb(event.detail.token);
+            }
         };
         const handleError = (event) => {
             const message = event.detail && event.detail.message;
@@ -103,8 +118,16 @@ export default function ShareCaptcha() {
         return () => {
             widget.removeEventListener("solve", handleSolve);
             widget.removeEventListener("error", handleError);
+            // 清理 widget 内部状态，防止卸载后继续发起推测性请求
+            if (widget.reset) {
+                try {
+                    widget.reset();
+                } catch (_) {
+                    // reset 可能会在 widget 已卸载时抛出，忽略
+                }
+            }
         };
-    }, [captcha, ready, t]);
+    }, [captcha && captcha.open, ready, t]);
 
     const open = Boolean(captcha && captcha.open);
 

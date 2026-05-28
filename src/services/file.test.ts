@@ -34,6 +34,26 @@ describe("getDownloadURL", () => {
         );
     });
 
+    it("omits path parameter for single-file shares", async () => {
+        await getDownloadURL(
+            {
+                key: "shareKey",
+                source: { name: "report.pdf" },
+            },
+            "cap-token"
+        );
+
+        expect(API.put).toHaveBeenCalledWith(
+            "/share/download/shareKey",
+            undefined,
+            {
+                headers: {
+                    "X-Cap-Token": "cap-token",
+                },
+            }
+        );
+    });
+
     it("keeps existing requests unchanged when no Cap token is provided", async () => {
         await getDownloadURL({ id: "fileID" });
 
