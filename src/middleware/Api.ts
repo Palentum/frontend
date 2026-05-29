@@ -56,38 +56,48 @@ export class AppError extends Error {
     }
 }
 
+// handleResponseError 从响应数据中提取错误信息并抛出 AppError。
+// 同时支持 2xx（success handler 调用）和非 2xx（error handler 调用）响应。
+function handleResponseError(data: any): void {
+    if (
+        data.code !== undefined &&
+        data.code !== 0 &&
+        data.code !== 203
+    ) {
+        // Login expired
+        if (data.code === 401) {
+            Auth.signout();
+            window.location.href =
+                "/login?redirect=" +
+                encodeURIComponent(
+                    window.location.pathname + window.location.search
+                );
+        }
+
+        // Non-admin
+        if (data.code === 40008) {
+            window.location.href = "/home";
+        }
+        throw new AppError(
+            data.msg,
+            data.code,
+            data.error
+        );
+    }
+}
+
 instance.interceptors.response.use(
     function (response: any) {
         response.rawData = response.data;
         response.data = response.data.data;
-        if (
-            response.rawData.code !== undefined &&
-            response.rawData.code !== 0 &&
-            response.rawData.code !== 203
-        ) {
-            // Login expired
-            if (response.rawData.code === 401) {
-                Auth.signout();
-                window.location.href =
-                    "/login?redirect=" +
-                    encodeURIComponent(
-                        window.location.pathname + window.location.search
-                    );
-            }
-
-            // Non-admin
-            if (response.rawData.code === 40008) {
-                window.location.href = "/home";
-            }
-            throw new AppError(
-                response.rawData.msg,
-                response.rawData.code,
-                response.rawData.error
-            );
-        }
+        handleResponseError(response.rawData);
         return response;
     },
-    function (error) {
+    function (error: any) {
+        // 非 2xx 响应：从 error.response.data 中提取错误信息
+        if (error.response && error.response.data) {
+            handleResponseError(error.response.data);
+        }
         return Promise.reject(error);
     }
 );
