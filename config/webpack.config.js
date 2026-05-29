@@ -662,6 +662,7 @@ module.exports = function(webpackEnv) {
       // the HTML & assets that are part of the Webpack build.
       isEnvProduction &&
         new WorkboxWebpackPlugin.GenerateSW({
+          skipWaiting: true,
           clientsClaim: true,
           exclude: [/\.map$/, /asset-manifest\.json$/,/\.ttf$/,/version\.json$/,/\.worker\.js$/],
           importWorkboxFrom: 'cdn',
