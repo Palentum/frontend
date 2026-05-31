@@ -665,7 +665,7 @@ module.exports = function(webpackEnv) {
           skipWaiting: true,
           clientsClaim: true,
           exclude: [/\.map$/, /asset-manifest\.json$/,/\.ttf$/,/version\.json$/,/\.worker\.js$/],
-          importWorkboxFrom: 'cdn',
+          importWorkboxFrom: 'local',
           excludeChunks:["monaco-editor-common","pdf","react-pdf"],
           navigateFallback: publicUrl + '/index.html',
           navigateFallbackBlacklist: [

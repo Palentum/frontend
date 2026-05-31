@@ -103,6 +103,17 @@ export function register(config) {
             return;
         }
 
+        if (navigator.serviceWorker.controller) {
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener("controllerchange", () => {
+                if (refreshing) {
+                    return;
+                }
+                refreshing = true;
+                window.location.reload();
+            });
+        }
+
         window.addEventListener("load", () => {
             const swUrl = `${process.env.PUBLIC_URL}/service-worker.js`;
 

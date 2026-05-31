@@ -26,6 +26,7 @@ serviceWorker.register({
         alert(i18next.t("newVersionRefresh", { ns: "common" }));
         if (registration && registration.waiting) {
             registration.waiting.postMessage({ type: "SKIP_WAITING" });
+            return;
         }
         window.location.reload();
     },
