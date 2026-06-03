@@ -15,6 +15,7 @@
   "forEditorLocaleCode": "zh-TW",
   "artPlayerLocaleCode": "zh-tw",
   "errors": {
+    "cf_challenge": "請完成 Cloudflare 安全質詢後重試",
     "401": "請先登入",
     "403": "此操作被禁止",
     "404": "資源不存在",

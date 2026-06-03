@@ -15,6 +15,7 @@
   "forEditorLocaleCode": "en",
   "artPlayerLocaleCode": "en",
   "errors": {
+    "cf_challenge": "Please complete the Cloudflare security challenge and retry.",
     "401": "Please login.",
     "403": "You are not allowed to perform this action.",
     "404": "Resource not found.",

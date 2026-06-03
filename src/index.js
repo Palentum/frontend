@@ -11,26 +11,14 @@ import { UpdateSiteConfig } from "./middleware/Init";
 import ErrorBoundary from "./component/Placeholder/ErrorBoundary";
 import { createBrowserHistory } from "history";
 import { ConnectedRouter, routerMiddleware } from "connected-react-router";
-import i18next from "./i18n";
 import PageLoading from "./component/Placeholder/PageLoading";
-import { removeI18nCache } from "./utils";
 
 const Admin = React.lazy(() => import("./Admin"));
 
 if (window.location.hash !== "") {
     window.location.href = window.location.hash.split("#")[1];
 }
-serviceWorker.register({
-    onUpdate: (registration) => {
-        removeI18nCache();
-        alert(i18next.t("newVersionRefresh", { ns: "common" }));
-        if (registration && registration.waiting) {
-            registration.waiting.postMessage({ type: "SKIP_WAITING" });
-            return;
-        }
-        window.location.reload();
-    },
-});
+serviceWorker.unregister({ reload: true });
 
 export const history = createBrowserHistory();
 let reduxEnhance = applyMiddleware(routerMiddleware(history), thunk);

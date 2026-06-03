@@ -137,10 +137,74 @@ export function register(config) {
     }
 }
 
-export function unregister() {
-    if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.ready.then((registration) => {
-            registration.unregister();
-        });
+const serviceWorkerCleanupReloadKey = "cloudreve_service_worker_cleanup_reload";
+
+function hasReloadedForServiceWorkerCleanup() {
+    try {
+        return (
+            window.sessionStorage.getItem(serviceWorkerCleanupReloadKey) === "1"
+        );
+    } catch (_) {
+        return false;
     }
+}
+
+function markServiceWorkerCleanupReloaded() {
+    try {
+        window.sessionStorage.setItem(serviceWorkerCleanupReloadKey, "1");
+    } catch (_) {
+        // Ignore storage errors; the current page can still unregister the worker.
+    }
+}
+
+function clearServiceWorkerCleanupReloaded() {
+    try {
+        window.sessionStorage.removeItem(serviceWorkerCleanupReloadKey);
+    } catch (_) {
+        // Ignore storage errors.
+    }
+}
+
+export function unregister(config) {
+    if (
+        !("serviceWorker" in navigator) ||
+        !navigator.serviceWorker.getRegistration
+    ) {
+        return;
+    }
+
+    if (!navigator.serviceWorker.controller) {
+        clearServiceWorkerCleanupReloaded();
+    }
+
+    navigator.serviceWorker.getRegistration().then((registration) => {
+        if (!registration) {
+            return;
+        }
+
+        const shouldReload =
+            config &&
+            config.reload &&
+            navigator.serviceWorker.controller &&
+            !hasReloadedForServiceWorkerCleanup();
+        if (shouldReload) {
+            markServiceWorkerCleanupReloaded();
+        }
+
+        registration
+            .unregister()
+            .then(() => {
+                if (shouldReload) {
+                    window.location.reload();
+                }
+            })
+            .catch((error) => {
+                console.error(
+                    "Error during service worker unregistration:",
+                    error
+                );
+            });
+    }).catch((error) => {
+        console.error("Error during service worker lookup:", error);
+    });
 }

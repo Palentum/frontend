@@ -7,8 +7,19 @@ import Backend from "i18next-http-backend";
 import ChainedBackend, { ChainedBackendOptions } from "i18next-chained-backend";
 import LanguageDetector from "i18next-browser-languagedetector";
 import LocalStorageBackend from "i18next-localstorage-backend";
+import { removeI18nCache } from "./utils";
 
 declare let ASSETS_VERSION: string;
+const i18nCacheVersionKey = "cloudreve_i18n_version";
+
+try {
+    if (localStorage.getItem(i18nCacheVersionKey) !== ASSETS_VERSION) {
+        removeI18nCache();
+        localStorage.setItem(i18nCacheVersionKey, ASSETS_VERSION);
+    }
+} catch (_) {
+    // Ignore storage errors; translations can still load through the HTTP backend.
+}
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-ignore
 // @ts-ignore
