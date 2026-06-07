@@ -309,6 +309,8 @@
     "cleanAllSession": "Clear all upload sessions",
     "cleanCompletedTooltip": "Clear completed tasks only",
     "cleanCompleted": "Clear completed tasks",
+    "cleanFailedTooltip": "Clear failed tasks only",
+    "cleanFailed": "Clear failed tasks",
     "retryFailedTasks": "Retry all failed tasks",
     "retryFailedTasksTooltip": "Retry all failed tasks in current queue",
     "setConcurrentTooltip": "Set the max number of tasks that can be uploaded simultaneously.",

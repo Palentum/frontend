@@ -17,7 +17,7 @@ import { DeleteEmpty } from "mdi-material-ui";
 import DeleteIcon from "@material-ui/icons/Delete";
 import ConcurrentOptionDialog from "../../Modals/ConcurrentOption";
 import Auth from "../../../middleware/Auth";
-import { ClearAll, Replay } from "@material-ui/icons";
+import { ClearAll, DeleteForever, Replay } from "@material-ui/icons";
 import { useTranslation } from "react-i18next";
 
 const useStyles = makeStyles((theme) => ({
@@ -38,6 +38,7 @@ export default function MoreActions({
     sorter,
     setSorter,
     cleanFinished,
+    cleanFailed,
     retryFailed,
 }) {
     const { t } = useTranslation("application", { keyPrefix: "uploader" });
@@ -142,6 +143,13 @@ export default function MoreActions({
                 divider: false,
             },
             {
+                tooltip: t("cleanFailedTooltip"),
+                onClick: () => cleanFailed(),
+                icon: <DeleteForever />,
+                text: t("cleanFailed"),
+                divider: false,
+            },
+            {
                 tooltip: t("retryFailedTasksTooltip"),
                 onClick: () => retryFailed(),
                 icon: <Replay />,
@@ -164,6 +172,8 @@ export default function MoreActions({
             filter,
             setFilter,
             cleanFinished,
+            cleanFailed,
+            retryFailed,
         ]
     );
 

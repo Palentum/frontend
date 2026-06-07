@@ -244,6 +244,24 @@ export default function TaskList({
         });
     };
 
+    const cleanFailed = () => {
+        const failedTasks = taskList.filter(
+            (task) => task.status === Status.error
+        );
+        if (failedTasks.length === 0) {
+            return;
+        }
+
+        Promise.all(
+            failedTasks.map((task) => task.cancel().catch(() => null))
+        ).then(() => {
+            const failedTaskIDs = new Set(failedTasks.map((task) => task.id));
+            setUploaders((u) =>
+                u.filter((task) => !failedTaskIDs.has(task.id))
+            );
+        });
+    };
+
     return (
         <>
             <MoreActions
@@ -272,6 +290,7 @@ export default function TaskList({
                         u.filter((task) => task.status !== Status.finished)
                     )
                 }
+                cleanFailed={cleanFailed}
             />
             <Dialog
                 classes={{

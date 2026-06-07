@@ -309,6 +309,8 @@
     "cleanAllSession": "清空所有上傳會話",
     "cleanCompletedTooltip": "清除列表中已完成的任務",
     "cleanCompleted": "清除已完成任務",
+    "cleanFailedTooltip": "清除列表中已出錯的任務",
+    "cleanFailed": "清除出錯任務",
     "retryFailedTasks": "重試所有失敗任務",
     "retryFailedTasksTooltip": "重試隊列中所有已失敗的任務",
     "setConcurrentTooltip": "設定同時進行的任務數量",
