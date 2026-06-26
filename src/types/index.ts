@@ -7,6 +7,7 @@ export interface CloudreveFile {
     path: string;
     type: "up" | "file" | "dir";
     source_enabled?: boolean;
+    shared?: boolean;
 }
 
 export type SortMethod =

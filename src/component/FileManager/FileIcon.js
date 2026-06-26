@@ -20,6 +20,7 @@ import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 import statusHelper from "../../utils/page";
 import Grow from "@material-ui/core/Grow";
 import FileName from "./FileName";
+import ShareLabel from "./ShareLabel";
 
 const styles = (theme) => ({
     container: {},
@@ -282,6 +283,7 @@ class FileIconCompoment extends Component {
                                 <FileName name={this.props.file.name} />
                             </Typography>
                         </Tooltip>
+                        <ShareLabel shared={this.props.file.shared} />
                     </div>
                 </ButtonBase>
             </div>

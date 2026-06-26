@@ -14,6 +14,7 @@ import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 import Grow from "@material-ui/core/Grow";
 import { Folder } from "@material-ui/icons";
 import FileName from "./FileName";
+import ShareLabel from "./ShareLabel";
 
 const styles = (theme) => ({
     container: {
@@ -165,6 +166,7 @@ class SmallIconCompoment extends Component {
                         <FileName name={this.props.file.name} />
                     </Typography>
                 </Tooltip>
+                <ShareLabel shared={this.props.file.shared} />
             </ButtonBase>
         );
     }

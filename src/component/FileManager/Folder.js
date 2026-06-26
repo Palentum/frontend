@@ -11,6 +11,7 @@ import {
 import { useSelector } from "react-redux";
 import statusHelper from "../../utils/page";
 import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
+import ShareLabel from "./ShareLabel";
 
 const useStyles = makeStyles((theme) => ({
     container: {
@@ -123,6 +124,7 @@ export default function Folder({ folder, isActive, onIconClick }) {
                     {folder.name}
                 </Typography>
             </Tooltip>
+            <ShareLabel shared={folder.shared} />
         </ButtonBase>
     );
 }

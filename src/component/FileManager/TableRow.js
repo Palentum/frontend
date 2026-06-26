@@ -21,6 +21,7 @@ import CheckCircleRoundedIcon from "@material-ui/icons/CheckCircleRounded";
 import Grow from "@material-ui/core/Grow";
 import { formatLocalTime } from "../../utils/datetime";
 import FileName from "./FileName";
+import ShareLabel from "./ShareLabel";
 
 const styles = (theme) => ({
     selected: {
@@ -179,6 +180,7 @@ class TableRowCompoment extends Component {
                             )}
                         </div>
                         <FileName name={this.props.file.name} />
+                        <ShareLabel shared={this.props.file.shared} />
                     </Typography>
                 </TableCell>
                 <TableCell
