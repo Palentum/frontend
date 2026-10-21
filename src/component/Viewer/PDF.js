@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from "react";
-import { Document, Page, pdfjs } from "react-pdf";
+// webpack 入口经 worker-loader 把 pdf.worker 打包为同源文件,满足后端 CSP 的 script-src 'self'
+import { Document, Page } from "react-pdf/dist/entry.webpack";
 import { Paper } from "@material-ui/core";
 import { makeStyles } from "@material-ui/core/styles";
 import { useLocation, useParams, useRouteMatch } from "react-router";
@@ -11,7 +12,8 @@ import { toggleSnackbar } from "../../redux/explorer";
 import UseFileSubTitle from "../../hooks/fileSubtitle";
 import { useTranslation } from "react-i18next";
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.js`;
+// 禁止 pdf.js 用 new Function 编译字体字形,规避 CVE-2024-4367(恶意 PDF 执行任意 JS)
+const pdfOptions = { isEvalSupported: false };
 
 const useStyles = makeStyles((theme) => ({
     layout: {
@@ -71,6 +73,7 @@ export default function PDFViewer() {
     return (
         <div className={classes.layout}>
             <Document
+                options={pdfOptions}
                 onLoadSuccess={({ numPages }) => setPageNumber(numPages)}
                 onLoadError={(error) => {
                     ToggleSnackbar(
