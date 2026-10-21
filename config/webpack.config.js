@@ -371,6 +371,12 @@ module.exports = function(webpackEnv) {
           ],
           include: paths.appSrc,
         },
+        // 给 for-editor 的预览渲染结果加上 HTML 净化,见 forEditorSanitizeLoader.js
+        {
+          test: /[\\/]node_modules[\\/]for-editor[\\/]dist[\\/]index\.js$/,
+          enforce: 'pre',
+          loader: require.resolve('./forEditorSanitizeLoader'),
+        },
         {
           // "oneOf" will traverse all following loaders until one will
           // match the requirements. When no loader matches it will fall
