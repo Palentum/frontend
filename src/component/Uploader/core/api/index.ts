@@ -216,7 +216,7 @@ export async function s3LikeUploadChunk(
         throw e;
     });
 
-    return res.headers.etag;
+    return res.headers.etag!;
 }
 
 export async function s3LikeFinishUpload(

@@ -23,6 +23,10 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "axios": ["typings/axios/index.d.ts"]
+    },
   },
   "include": [
     "src/**/*"
